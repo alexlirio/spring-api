@@ -1,6 +1,6 @@
 package com.example.spring.api.exceptionhandler;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +18,26 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.example.spring.domain.exception.BusinessException;
+import com.example.spring.domain.exception.EntityNotFoundException;
 
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@Autowired
 	private MessageSource messageSource;
+	
+	//to format response "EntityNotFoundException"
+	@ExceptionHandler(EntityNotFoundException.class)
+	public ResponseEntity<Object> handleEntityNotFound(BusinessException ex, WebRequest request) {
+		var status = HttpStatus.NOT_FOUND;
+		
+		var exceptionBody = new ExceptionBody();
+		exceptionBody.setStatus(status.value());
+		exceptionBody.setTittle(ex.getMessage());
+		exceptionBody.setDateTime(OffsetDateTime.now());
+		
+		return super.handleExceptionInternal(ex, exceptionBody, new HttpHeaders(), status, request);
+	}
 	
 	//to format response "BusinessException"
 	@ExceptionHandler(BusinessException.class)
@@ -33,7 +47,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		var exceptionBody = new ExceptionBody();
 		exceptionBody.setStatus(status.value());
 		exceptionBody.setTittle(ex.getMessage());
-		exceptionBody.setDateTime(LocalDateTime.now());
+		exceptionBody.setDateTime(OffsetDateTime.now());
 		
 		return super.handleExceptionInternal(ex, exceptionBody, new HttpHeaders(), status, request);
 	}
@@ -46,13 +60,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 		var exceptionBody = new ExceptionBody();
 		exceptionBody.setStatus(status.value());
 		exceptionBody.setTittle("One or more fields are invalids. Try correct values.");
-		exceptionBody.setDateTime(LocalDateTime.now());
+		exceptionBody.setDateTime(OffsetDateTime.now());
 		
 		var fields = new ArrayList<ExceptionBody.Field>();
 		for (ObjectError error : ex.getBindingResult().getAllErrors()) {
 			String name = ((FieldError) error).getField();
-//			String message = error.getDefaultMessage(); //Get default message 
-			String message = messageSource.getMessage(error, LocaleContextHolder.getLocale()); //Get message from "messages.properties" 
+//			String message = error.getDefaultMessage(); //get default message 
+			String message = messageSource.getMessage(error, LocaleContextHolder.getLocale()); //get message from "messages.properties" 
 			fields.add(new ExceptionBody.Field(name, message));
 		}
 		exceptionBody.setFields(fields);

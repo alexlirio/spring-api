@@ -26,48 +26,36 @@ import com.example.spring.domain.service.RegisterClientService;
 @RequestMapping("/client")
 public class ClientController {
 	
-	//Example 2
+	@Autowired
+	private ClientRepository clientRepository; //"repository" is used to "simple queries" in this layer
+	
+	@Autowired
+	private RegisterClientService registerClientService; //"service" is used to "business rules"
+	
+//	//Example to use "EntityManager" in this layer, if necessary.
 //	@PersistenceContext
 //	private EntityManager em;
+//	
+//	//Example using "model(Client.class)" instead of "dto(ClientInputDto/ClientOutputDto.class)"
+//	@GetMapping
+//	public List<Client> list() {
+//		return em.createQuery("FROM Client", Client.class).getResultList();
+//	}
 	
-	//"repository" here is to "simple queries"
-	@Autowired
-	private ClientRepository clientRepository;
-	
-	//"service" here is to "business rules"
-	@Autowired
-	private RegisterClientService registerClientService;
-	
+	//Example using "model(Client.class)" instead of "dto(ClientInputDto/ClientOutputDto.class)"
 	@GetMapping
 	public List<Client> list() {
 		
-		//Example 1
-//		var client1 = new Client();
-//		client1.setId(1L);
-//		client1.setName("Alex Lirio");
-//		client1.setEmail("alex@mail.com");
-//		client1.setPhone("21 99999-8888");
-//		
-//		var client2 = new Client();
-//		client2.setId(1L);
-//		client2.setName("Patricia");
-//		client2.setEmail("patricia@mail.com");
-//		client2.setPhone("21 88888-7777");
-//		
-//		return Arrays.asList(client1, client2);
+//		//Example of "findByName" automatic
+//		List<Client> clientList = clientRepository.findByName("Alex Lirio");
 		
-		//Example 2
-//		return em.createQuery("FROM Client", Client.class).getResultList();
-		
-		//Example "findByName" with automatic implemented
-		List<Client> l = clientRepository.findByName("Alex Lirio");
-		
-		//Example "findByNameContaining" automatic implemented
-		l = clientRepository.findByNameContaining("Gu");
+//		//Example of "findByNameContaining" automatic
+//		List<Client> clientList = clientRepository.findByNameContaining("Gu");
 		
 		return clientRepository.findAll();
 	}
 	
+	//Example using "model(Client.class)" instead of "dto(ClientInputDto/ClientOutputDto.class)" 
 	@GetMapping("/{clientId}")
 	public ResponseEntity<Client> find(@PathVariable Long clientId) {
 		Optional<Client> client = clientRepository.findById(clientId);
@@ -79,24 +67,27 @@ public class ClientController {
 		return ResponseEntity.notFound().build();
 	}
 	
+	//Example using "model(Client.class)" instead of "dto(ClientInputDto/ClientOutputDto.class)"
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public Client save(@Valid @RequestBody Client client) {
 		return registerClientService.save(client);
 	}
 	
+	//Example using "model(Client.class)" instead of "dto(ClientInputDto/ClientOutputDto.class)"
 	@PutMapping("/{clientId}")
 	public ResponseEntity<Client> update(@Valid @PathVariable Long clientId, @RequestBody Client client) {
 		if (!clientRepository.existsById(clientId)) {
 			return ResponseEntity.notFound().build();
 		}
 		
-		client.setId(clientId);;
+		client.setId(clientId);
 		registerClientService.save(client);
 		
 		return ResponseEntity.ok(client);
 	}
 	
+	//Example using "model(Client.class)" instead of "dto(ClientInputDto/ClientOutputDto.class)"
 	@DeleteMapping("/{clientId}")
 	public ResponseEntity<Void> update(@PathVariable Long clientId) {
 		if (!clientRepository.existsById(clientId)) {
